@@ -175,6 +175,7 @@ void walk_dir(char* path_name, void (*record_file)(char*, struct ls_attr_t*), st
 	if (p->recursive)
 		printf("%s:\n", path_name);
 	print_files(p);
+	list_size = 0;
 
 	chdir(old_entry);
 	closedir(dir);
@@ -317,8 +318,9 @@ void encode_display(char* file_name_list[], int n, int col_line_max[], int per_s
 	char* dir_file_name[BUFSIZ] = { NULL };
 	int dir_file_name_list_size = 0;
 	struct stat buf;
+	memset(&buf, 0, sizeof(struct stat));
 
-	if (stat(file_name_list[0], &buf) == -1) {
+	if (n > 0 && stat(file_name_list[0], &buf) == -1) {
 		printf("encode_display\n");
 		perror("stat");
 		exit(1);
@@ -370,6 +372,7 @@ void encode_display(char* file_name_list[], int n, int col_line_max[], int per_s
 	for (i = 0; i < dir_file_name_list_size; ++i)
 		if (strcmp(dir_file_name[i], ".") != 0 && strcmp(dir_file_name[i], "..") != 0)
 			walk_dir(dir_file_name[i], record_file, p);
+	list_size = 0;
 }
 
 
