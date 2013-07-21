@@ -94,9 +94,10 @@ void list_all_files(char* str_array[], int n, struct ls_attr_t* p)
 	}
 	
 	// default(./)
-	if (n == 0 && !p->dir)
+	if (n == 0 && !p->dir) {
 		walk_dir(".", record_file, p);
-	else if (n == 0)
+		return;
+	} else if (n == 0)
 		record_file(".", p);
 	
 	if (list_size == 0)
