@@ -1,0 +1,4 @@
+ls
+==
+
+a simple ls
