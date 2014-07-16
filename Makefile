@@ -1,13 +1,14 @@
 .PHONY: all clean
 
-CFLAGS=-std=c99 -g
-CC=clang
+CXXFLAGS=-std=c++11 -g
+CC=clang++
 
-all: ls.o
-	$(CC) $(CFLAGS) ls.o -o ls -lm
+all: ls
 
-ls.o:ls.h ls.c
-	$(CC) ls.c -c $(CFLAGS)
+ls: ls.o
+	$(CC) ls.o -o ls
+
+ls.o:
 
 clean:
-	-rm ls.o
+	$(RM) ls.o
