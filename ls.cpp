@@ -8,7 +8,7 @@ int main(int argc, char* argv[])
 
     // parse the parameters
     int ch;
-    while ((ch = getopt(argc, argv, "1aBdfgGhilrRs")) != -1) {
+    while ((ch = getopt(argc, argv, "1aBdfgGhilrRS")) != -1) {
         switch (ch) {
         case 'a': // print all files
             attr.all = 1;
@@ -164,7 +164,7 @@ void pretty_print(const std::vector<std::string>& files, const ls_attr_t& attr)
     };
 
     if (attr.long_format) {
-        std::size_t width[4] = {0};
+        std::size_t width[4] = {0}, total_size = 0;
         struct stat buf;
         for (int i = 0; i < files.size(); ++i) {
             if (stat(files[i].c_str(), &buf) == -1) {
@@ -172,11 +172,13 @@ void pretty_print(const std::vector<std::string>& files, const ls_attr_t& attr)
                 std::perror("stat");
                 std::exit(1);
             }
+            total_size += buf.st_blocks;
             width[0] = std::max(width[0], static_cast<std::size_t>(std::log10(buf.st_nlink) + 1));
             width[1] = std::max(width[1], std::strlen(getpwuid(buf.st_uid)->pw_name));
             width[2] = std::max(width[2], std::strlen(getgrgid(buf.st_gid)->gr_name));
             width[3] = std::max(width[3], static_cast<std::size_t>(std::log10(buf.st_size) + 1));
         }
+        std::cout << "total " << total_size / 2 << std::endl;
         for (int i = 0; i < files.size(); ++i) {
             if (stat(files[i].c_str(), &buf) == -1) {
                 std::printf("%s\t", files[i].c_str());
