@@ -139,7 +139,7 @@ void walk_dir(const std::string& path_name, const ls_attr_t& attr)
     // recursive
     if (attr.recursive) {
         for (int i = 0; i < collector.size(); ++i) {
-            if (!is_dir_file(collector[i]))
+            if (!is_dir_file(collector[i]) || collector[i] == "." || collector[i] == "..")
                 continue;
             std::puts("");
             walk_dir(collector[i], attr);
