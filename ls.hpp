@@ -56,6 +56,7 @@ struct ls_attr_t {
 
 inline bool is_dir_file(const std::string&);
 inline bool is_reg_file(const std::string&);
+inline bool is_lnk_file(const std::string&);
 
 inline bool size_cmp(const std::string&, const std::string&);
 

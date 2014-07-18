@@ -75,7 +75,7 @@ void list_all_files(const std::vector<std::string>& files, const ls_attr_t& attr
     struct stat buf;
     std::vector<std::string> collector;
     for (int i = 0; i < files.size(); ++i) {
-        if (stat(files[i].c_str(), &buf) == -1) {
+        if (fstatat(AT_FDCWD, files[i].c_str(), &buf, AT_SYMLINK_NOFOLLOW) == -1) {
             std::printf("list_all_files\n");
             std::perror("stat");
             std::exit(1);
@@ -139,7 +139,7 @@ void walk_dir(const std::string& path_name, const ls_attr_t& attr)
     // recursive
     if (attr.recursive) {
         for (int i = 0; i < collector.size(); ++i) {
-            if (!is_dir_file(collector[i]) || collector[i] == "." || collector[i] == "..")
+            if (is_lnk_file(collector[i]) || !is_dir_file(collector[i]) || collector[i] == "." || collector[i] == "..")
                 continue;
             std::puts("");
             walk_dir(collector[i], attr);
@@ -167,7 +167,7 @@ void pretty_print(const std::vector<std::string>& files, const ls_attr_t& attr)
         std::size_t width[4] = {0}, total_size = 0;
         struct stat buf;
         for (int i = 0; i < files.size(); ++i) {
-            if (stat(files[i].c_str(), &buf) == -1) {
+            if (fstatat(AT_FDCWD, files[i].c_str(), &buf, AT_SYMLINK_NOFOLLOW) == -1) {
                 std::printf("pretty_print");
                 std::perror("stat");
                 std::exit(1);
@@ -180,7 +180,7 @@ void pretty_print(const std::vector<std::string>& files, const ls_attr_t& attr)
         }
         std::cout << "total " << total_size / 2 << std::endl;
         for (int i = 0; i < files.size(); ++i) {
-            if (stat(files[i].c_str(), &buf) == -1) {
+            if (fstatat(AT_FDCWD, files[i].c_str(), &buf, AT_SYMLINK_NOFOLLOW) == -1) {
                 std::printf("%s\t", files[i].c_str());
                 std::printf("pretty_print\n");
                 std::perror("stat");
@@ -299,7 +299,7 @@ void display_usage()
 bool is_reg_file(const std::string& name)
 {
     struct stat buf;
-    if (stat(name.c_str(), &buf) == -1) {
+    if (fstatat(AT_FDCWD, name.c_str(), &buf, AT_SYMLINK_NOFOLLOW) == -1) {
         std::printf("is_reg_file\n");
         std::perror("stat");
         std::exit(1);
@@ -310,7 +310,7 @@ bool is_reg_file(const std::string& name)
 bool is_dir_file(const std::string& name)
 {
     struct stat buf;
-    if (stat(name.c_str(), &buf) == -1) {
+    if (fstatat(AT_FDCWD, name.c_str(), &buf, AT_SYMLINK_NOFOLLOW) == -1) {
         std::printf("is_dir_file\n");
         std::printf("%s\n", name.c_str());
         std::perror("stat");
@@ -319,10 +319,22 @@ bool is_dir_file(const std::string& name)
     return S_ISDIR(buf.st_mode);
 }
 
+bool is_lnk_file(const std::string& name)
+{
+    struct stat buf;
+    if (fstatat(AT_FDCWD, name.c_str(), &buf, AT_SYMLINK_NOFOLLOW) == -1) {
+        std::printf("is_lnk_file\n");
+        std::printf("%s\n", name.c_str());
+        std::perror("stat");
+        std::exit(1);
+    }
+    return S_ISLNK(buf.st_mode);
+}
+
 bool size_cmp(const std::string& file1, const std::string& file2)
 {
     struct stat buf1, buf2;
-    if (stat(file1.c_str(), &buf1) == -1) {
+    if (fstatat(AT_FDCWD, file1.c_str(), &buf1, AT_SYMLINK_NOFOLLOW) == -1) {
         std::printf("size_cmp\n");
         std::perror("stat");
         std::exit(1);
