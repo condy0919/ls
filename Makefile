@@ -1,6 +1,6 @@
 .PHONY: all clean
 
-CXXFLAGS=-std=c++11 -g
+CXXFLAGS=-std=c++11 -g -O2
 CC=clang++
 
 all: ls

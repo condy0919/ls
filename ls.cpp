@@ -61,8 +61,10 @@ int main(int argc, char* argv[])
         if (argv[i][0] != '-')
             files.push_back(argv[i]);
     }
-    if (!attr.no_sort)
-        std::sort(files.begin(), files.end(), cmp);
+    if (!attr.no_sort) {
+        std::sort(files.begin(), files.end());
+        std::stable_sort(files.begin(), files.end(), cmp);
+    }
     if (attr.reverse)
         std::reverse(files.begin(), files.end());
 
@@ -127,8 +129,10 @@ void walk_dir(const std::string& path_name, const ls_attr_t& attr)
         else
             collector.push_back(entry->d_name);
     }
-    if (!attr.no_sort)
-        std::sort(collector.begin(), collector.end(), cmp);
+    if (!attr.no_sort) {
+        std::sort(collector.begin(), collector.end());
+        std::stable_sort(collector.begin(), collector.end(), cmp);
+    }
     if (attr.reverse)
         std::reverse(collector.begin(), collector.end());
 
@@ -163,7 +167,7 @@ void pretty_print(const std::vector<std::string>& files, const ls_attr_t& attr)
         }
     };
 
-    if (attr.long_format) {
+    if (attr.long_format || attr.l_without_owner) {
         std::size_t width[4] = {0}, total_size = 0;
         struct stat buf;
         for (int i = 0; i < files.size(); ++i) {
@@ -258,11 +262,21 @@ void pretty_print(const std::vector<std::string>& files, const ls_attr_t& attr)
     }
 
     int size;
-    for (size = 1; size < files.size(); ++size)
-        if (predicate::P(max_between, size, get_screen_col()))
-            break;
-    if (attr.one_column)
+    if (attr.one_column) {
         size = files.size();
+    } else {
+        int l = 1, r = files.size(), mid;
+        while (l <= r) {
+            mid = l + (r - l) / 2;
+            if (predicate::P(max_between, mid, get_screen_col())) {
+                r = mid - 1;
+                size = mid;
+            } else {
+                l = mid + 1;
+            }
+        }
+    }
+
     for (int i = 0; i < size; ++i) {
         for (int j = i, c = 0; j < files.size(); j += size, ++c) {
             int extra_width = (j + size < files.size()) ? 2 : 1;
@@ -344,5 +358,5 @@ bool size_cmp(const std::string& file1, const std::string& file2)
         std::perror("stat");
         std::exit(1);
     }
-    return buf1.st_size < buf2.st_size;
+    return buf1.st_size > buf2.st_size;
 }
